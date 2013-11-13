@@ -4,6 +4,8 @@
 
 ### Installation and Initial Testing
 
+*Note:* If you check out the git repository, run `./gradlew downloadGrouper` from the repository root and skip to step 5. You will also have to change some paths to match the directory you cloned into.
+
 1. Install JDK 7 from [Oracle](http://www.oracle.com/technetwork/java/javase/downloads/index.html). Follow the instructions at that site to download and install Java SE Development Kit 7u45.
 1. Download the tarball from [Google Drive](https://drive.google.com/file/d/0B20vWe3mpgaYTWRDRFhGUkRUblE/edit?usp=sharing).
 1. Choose a location to install the package. For this demo, `~/Applications` will be used.
