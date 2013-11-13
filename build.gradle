@@ -1,0 +1,93 @@
+apply plugin: 'groovy'
+
+buildscript {
+    repositories {
+        maven { url "http://oss.jfrog.org/repo" }
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.ratpack-framework:ratpack-gradle:0.9.0-SNAPSHOT"
+    }
+}
+
+sourceCompatibility = 1.7
+version = '1.0'
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.8'
+    distributionUrl = 'http://services.gradle.org/distributions/gradle-1.8-all.zip'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}
+
+task runAll << {
+    subprojects.each { println it.run }
+}
+
+task runGrouper << {
+    println "here we are"
+    def console = System.console()
+    if (console) {
+        def grouperBase = project.file('grouper')
+        def dbCommand = "${grouperBase}/startDb.sh"
+        def dbProc = dbCommand.execute()
+        def line
+        while (line != "exit") {
+            println "type 'exit' to exit"
+            line = console.readLine('> ')
+        }
+        println "exiting"
+        dbProc.destroy()
+    }
+}
+
+task downloadGrouper << {
+    println "downloading files"
+
+    // clean up a potential failure
+    delete temporaryDir
+
+    // set up the urls that need to be downloaded
+    def urls = []
+
+    // extra urls (ant and tomcat)
+    ['apache-tomcat-6.0.35.tar.gz', 'apache-ant-1.8.2-bin.tar.gz'].each {
+        urls << "http://software.internet2.edu/grouper/downloads/tools/${it}"
+    }
+
+    // grouper urls
+    def root = "http://software.internet2.edu/grouper/release/${project."grouper.version"}"
+    ['clientBinary', 'apiBinary', 'psp', 'ui', 'ws'].each {
+        urls << "${root}/grouper.${it}-${project."grouper.version"}.tar.gz"
+    }
+    urls << "${root}/grouperInstaller.jar"
+
+    // determine urls that need to be downloaded
+    def haveFiles = file("grouper").list()
+    def needUrls = urls.findAll { !haveFiles.contains(it.tokenize("/")[-1]) }
+
+    // download the needed files
+    needUrls.each {
+        println "downloading ${it}"
+        def file = new File(temporaryDir, it.tokenize("/")[-1])
+        def outputStream = new BufferedOutputStream(file.newOutputStream())
+        outputStream << new URL(it).openStream()
+        outputStream.close()
+    }
+
+    // copy files
+    copy {
+        from temporaryDir
+        into "grouper"
+        include "*"
+    }
+
+    // clean up after ourself
+    delete temporaryDir
+}
