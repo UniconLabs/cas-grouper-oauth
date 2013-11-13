@@ -1,4 +1,4 @@
-# CAS Grouper Oauth
+# CAS Grouper OAuth
 
 ## Mac OS X 10.9
 
